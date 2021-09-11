@@ -1,0 +1,70 @@
+version: "3"
+services:
+  api:
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    container_name: api
+    ports:
+      - 8002:8002
+    volumes:
+      - ./api:/app
+    networks:
+      - api-network
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres
+    container_name: db
+    environment:
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    ports:
+      - "5432:5432"
+    volumes:
+      - "pgsql:/var/lib/postgresql/data"
+    networks:
+      - api-network
+    restart: unless-stopped
+
+  pg-admin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "${PGADMIN_USER}"
+      PGADMIN_DEFAULT_PASSWORD: "${PGADMIN_PASSWORD}"
+    ports:
+      - "16543:80"
+    networks:
+      - api-network
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  nginx:
+    container_name: nginx
+    image: nginx:1.17.8
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - /etc/hosts:/etc/hosts
+    links:
+      - api
+    networks:
+      - api-network
+    depends_on:
+      - api
+    restart: unless-stopped
+
+networks:
+  api-network:
+    driver: bridge
+
+volumes:
+  pgsql:
+    driver: local
+  pgadmin:
+    driver: local
