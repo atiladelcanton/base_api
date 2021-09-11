@@ -7,5 +7,5 @@ Será necessário configurar um arquivo de hosts em sua maquina caso queira, ace
 ```
 
 ```sh
- 127.0.0.1  api.todolt.local
+ 127.0.0.1  api.local
 ```
